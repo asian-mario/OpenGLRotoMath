@@ -1,0 +1,3 @@
+﻿  texture.cpp
+D:\OpenGL\OpenGL\texture.cpp(11,9): warning C4101: 'texture': unreferenced local variable
+  OpenGL.vcxproj -> D:\OpenGL\OpenGL\x64\Debug\OpenGL.exe

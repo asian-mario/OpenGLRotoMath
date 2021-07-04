@@ -1,0 +1,80 @@
+
+	/*GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER); //specifying we want to make a vertex shader
+	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL); //ref value, using 1 string for whole shader, where source code is, ~
+	glCompileShader(vertexShader);
+
+	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+	glCompileShader(fragmentShader);
+
+	GLuint shaderProgram = glCreateProgram(); //wrap all the shaders into a shader program
+	glAttachShader(shaderProgram, vertexShader);
+	glAttachShader(shaderProgram, fragmentShader); //adding the shaders
+
+	glLinkProgram(shaderProgram); //wrap up the program
+
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader); //delete these because they are already inside the program*/
+
+	/*GLuint VBO, VAO, EBO;
+
+	glGenVertexArrays(1, &VAO); //amnt of objects, reference (Generatoe VAO with one obj.)
+	glGenBuffers(1, &VBO); //amnt. of 3d objects and reference (Generate VBO with one obj.)
+	glGenBuffers(1, &EBO); //Generate EBO (Element Buffer Object)
+	// Make the VBO the current vertex buffer by binding it
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	glBindVertexArray(VAO); //make VAO the current vertex array by binding
+
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vert2d), vert2d, GL_STATIC_DRAW); //type of buffer, size of data in bytes, the data and the use. GL_Static (modified once, used many), Stream (mod. once, used a few times), Dynamic (modified multiple, used many)
+	//VAO acts as pointers to VBO's and tells opengl on how to use them
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); //position of vert attribute, values per vert, value type, if values are int, amnt of data between each vertex, offset (using void because our vertex is at the start of the array)
+	glEnableVertexAttribArray(0); //enabling it, the var is the position of vert attribute
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind VBO and VOA
+	glBindVertexArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //unbind EBO after VAO becauase its stored in it*/
+
+
+	
+	int widthImg, heightImg, numColCh; //image width & height and amount of colour channels
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* bytes = stbi_load("pop_cat.png", &widthImg, &heightImg, &numColCh, 0); //loc, width, height, num of colour channels and desired channels
+
+	GLuint texture;
+	glGenTextures(1, &texture); //num. of textures & reference variable
+	glActiveTexture(GL_TEXTURE0); //choosing the slot you want to use for the texture
+	glBindTexture(GL_TEXTURE_2D, texture); //type of texture and the var
+
+	/*when scaled up or down we need to choose between GL_NEAREST and GL_LINEAR, 
+	GL_NEAREST keeps all the pixels as is and can appear pixelated when scaled up to high (more for pixel art)
+	GL_LINEAR which makes new pixels according to pixels nearby (may make image blurier
+	*/
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); //type of texture, setting, what we want to change inside setting
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	//textures can be repeated a few ways, GL_REPEAT, GL_MIRRORED_REPEAT, GL_CLAMP_TO_EDGE and GL_CLAMP_TO_BORDER. you can mix and match since they only aplly on one axis. s = x, t = y, z = r
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+
+	/*GL_CLAMP_TO_BORDER:
+		float flatColor[] = {1.0f, 1.0f, 1.0f, 1.0f,};
+		glTexParamterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, flatColor);
+	*/
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, widthImg, heightImg, 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes); //Texture type, ~, type of col channels, width, height, ~, color channels our image has, datatype of pixels, image info
+	glGenerateMipmap(GL_TEXTURE_2D); //smaller resolution versions
+
+	stbi_image_free(bytes); //delete data
+	glBindTexture(GL_TEXTURE_2D, 0); //unbind texture
+
+	GLuint tex0uni = glGetUniformLocation(shaderProgram.ID, "tex0");
+	shaderProgram.Activate();
+	glUniform1i(tex0uni, 0);
+	//RGBA is for png, RGB is for jpg
